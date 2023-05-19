@@ -8,7 +8,8 @@ export const theme: DefaultTheme = {
     lighter: "#2F2F2F",
   },
   white: {
-    lighter: "#fff",
+    lighter: "#fffff",
     darker: "#e5e5e5",
+    hoverColor: "#B9B9B9",
   },
 };
