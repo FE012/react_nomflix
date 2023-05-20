@@ -6,6 +6,7 @@ interface IMovie {
   poster_path: string;
   title: string;
   overview: string;
+  id: number;
 }
 
 export interface IGetMoviesResult {
