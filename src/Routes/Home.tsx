@@ -5,9 +5,7 @@ function Home() {
         backgroundColor: "whitesmoke",
         height: "200vh",
       }}
-    >
-      Home
-    </div>
+    ></div>
   );
 }
 
