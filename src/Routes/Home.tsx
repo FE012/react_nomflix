@@ -48,9 +48,9 @@ function Home() {
         <Loader>Loading...</Loader>
       ) : (
         <>
-          <Banner bgPhoto={makeImagePath(data?.results[5].backdrop_path || "")}>
-            <Title>{data?.results[5].title}</Title>
-            <Overview>{data?.results[5].overview}</Overview>
+          <Banner bgPhoto={makeImagePath(data?.results[0].backdrop_path || "")}>
+            <Title>{data?.results[0].title}</Title>
+            <Overview>{data?.results[0].overview}</Overview>
           </Banner>
         </>
       )}
