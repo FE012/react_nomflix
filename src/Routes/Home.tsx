@@ -33,7 +33,7 @@ const Title = styled.h2`
 `;
 
 const Overview = styled.p`
-  font-size: 28px;
+  font-size: 20px;
   width: 50%;
 `;
 
@@ -44,7 +44,7 @@ const Slider = styled.div`
 
 const Row = styled(motion.div)`
   display: grid;
-  gap: 10px;
+  gap: 5px;
   grid-template-columns: repeat(6, 1fr);
   position: absolute;
   width: 100%;
@@ -55,9 +55,14 @@ const Box = styled(motion.div)<{ bgPhoto: string }>`
   background-image: url(${(props) => props.bgPhoto});
   background-size: cover;
   background-position: center center;
-  height: 200px;
-  color: red;
+  height: 150px;
   font-size: 66px;
+  &:first-child {
+    transform-origin: center left;
+  }
+  &:last-child {
+    transform-origin: center right;
+  }
 `;
 
 const rowVariants = {
@@ -72,12 +77,26 @@ const rowVariants = {
   },
 };
 
+const boxVariants = {
+  normal: {
+    scale: 1,
+  },
+  hover: {
+    scale: 1.5,
+    y: -50,
+    transition: {
+      delay: 0.5,
+      duration: 0.3,
+      type: "tween",
+    },
+  },
+};
+
 function Home() {
   const { data, isLoading } = useQuery<IGetMoviesResult>(
     ["movies", "nowPlaying"],
     getMovies
   );
-
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
   const increaseIndex = () => {
@@ -121,7 +140,11 @@ function Home() {
                   .map((movie) => (
                     <Box
                       key={movie.id}
+                      variants={boxVariants}
+                      initial="normal"
+                      whileHover="hover"
                       bgPhoto={makeImagePath(movie.backdrop_path, "w500")}
+                      transition={{ type: "tween" }}
                     />
                   ))}
               </Row>
