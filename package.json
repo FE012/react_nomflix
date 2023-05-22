@@ -54,5 +54,5 @@
     "@types/react-router-dom": "^5.3.3",
     "@types/styled-components": "^5.1.26"
   },
-  "homepage": "https://fe012.github.io/react_nomflix.git"
+  "homepage": "https://fe012.github.io/react_nomflix"
 }
