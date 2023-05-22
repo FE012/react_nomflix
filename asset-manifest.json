@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/react_nomflix.git/static/css/main.93a0497a.css",
+    "main.js": "/react_nomflix.git/static/js/main.6a7a9f45.js",
+    "index.html": "/react_nomflix.git/index.html",
+    "main.93a0497a.css.map": "/react_nomflix.git/static/css/main.93a0497a.css.map",
+    "main.6a7a9f45.js.map": "/react_nomflix.git/static/js/main.6a7a9f45.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.93a0497a.css",
+    "static/js/main.6a7a9f45.js"
+  ]
+}
