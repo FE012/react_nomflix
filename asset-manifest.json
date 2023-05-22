@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/react_nomflix.git/static/css/main.93a0497a.css",
-    "main.js": "/react_nomflix.git/static/js/main.2c7dfa59.js",
-    "index.html": "/react_nomflix.git/index.html",
-    "main.93a0497a.css.map": "/react_nomflix.git/static/css/main.93a0497a.css.map",
-    "main.2c7dfa59.js.map": "/react_nomflix.git/static/js/main.2c7dfa59.js.map"
+    "main.css": "/react_nomflix/static/css/main.93a0497a.css",
+    "main.js": "/react_nomflix/static/js/main.59a6efa4.js",
+    "index.html": "/react_nomflix/index.html",
+    "main.93a0497a.css.map": "/react_nomflix/static/css/main.93a0497a.css.map",
+    "main.59a6efa4.js.map": "/react_nomflix/static/js/main.59a6efa4.js.map"
   },
   "entrypoints": [
     "static/css/main.93a0497a.css",
-    "static/js/main.2c7dfa59.js"
+    "static/js/main.59a6efa4.js"
   ]
 }
