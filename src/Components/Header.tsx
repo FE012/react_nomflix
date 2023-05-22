@@ -24,11 +24,11 @@ const Col = styled.div`
 
 const Logo = styled(motion.svg)`
   margin-right: 50px;
-  width: 93px;
-  height: 23px;
+  width: 95px;
+  height: 25px;
   fill: ${(props) => props.theme.red};
   path {
-    stroke-width: 6px;
+    stroke-width: 4px;
     stroke: white;
   }
 `;

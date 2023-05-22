@@ -4,12 +4,15 @@ import { motion, AnimatePresence, useScroll } from "framer-motion";
 import {
   getMovies,
   getTopMovies,
+  getUpcomingMovies,
   IGetMoviesResult,
   IGetTopMoviesResult,
 } from "./api";
 import { makeImagePath } from "./util";
 import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
 const Wrapper = styled.div`
   background: black;
@@ -44,13 +47,25 @@ const Overview = styled.p`
 `;
 
 const Category = styled.h3`
-  font-size: 20px;
+  font-size: 23px;
   font-weight: 400;
   margin-bottom: 10px;
+  margin-left: 5px;
 `;
 
 const Slider = styled.div`
   position: relative;
+`;
+
+const NextButton = styled.div`
+  position: absolute;
+  right: 10px;
+  top: 100px;
+  border-radius: 7.5px;
+  &:hover {
+    cursor: pointer;
+    scale: 1.7;
+  }
 `;
 
 const Row = styled(motion.div)`
@@ -108,7 +123,11 @@ const BigMovie = styled(motion.div)`
   margin: 0 auto;
   overflow: hidden;
   border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   background-color: ${(props) => props.theme.black.lighter};
+  z-index: 99;
 `;
 
 const BigCover = styled.div`
@@ -131,6 +150,11 @@ const BigOverview = styled.p`
   position: relative;
   top: -80px;
   color: ${(props) => props.theme.white.lighter};
+`;
+
+const BigAverage = styled.h4`
+  font-size: 22px;
+  margin: 10px;
 `;
 
 const rowVariants = {
@@ -174,40 +198,119 @@ const infoVariants = {
 const offset = 6;
 
 function Home() {
-  const history = useHistory();
-  const bigMovieMatch = useRouteMatch<{ movieId: string }>("/movies/:movieId");
   const { scrollY } = useScroll();
-  //Latest movies
+  const history = useHistory();
+  //Latest Movies
+  const bigMovieMatch = useRouteMatch<{ movieId: string }>("/movies/:movieId");
+  //Top Rated Movies
+  const topBigMovieMatch = useRouteMatch<{ movieId: string }>(
+    "/movies/top_rated/:movieId"
+  );
+
+  //Upcoming Movies
+  const upBigMovieMatch = useRouteMatch<{ movieId: string }>(
+    "/movies/upcoming/:movieId"
+  );
+
+  //Latest Movies data
   const { data: nowPlaying, isLoading } = useQuery<IGetMoviesResult>(
     ["movies", "nowPlaying"],
     getMovies
   );
-  //Top Rated Movies
+  console.log(nowPlaying);
+  //Top Rated Movies data
   const { data: topRated } = useQuery<IGetTopMoviesResult>(
-    ["movies", "TopRated"],
+    ["movies", "topRated"],
     getTopMovies
   );
-  console.log(topRated);
+  //Upcoming Movies data
+  const { data: upcoming } = useQuery<IGetTopMoviesResult>(
+    ["movies", "upcoming"],
+    getUpcomingMovies
+  );
+
+  //Latest movies
   const [index, setIndex] = useState(0);
+  const [direction, setDirection] = useState(false);
+  //Top Rated Movies
+  const [topIndex, setTopIndex] = useState(0);
+  const [topDirection, setTopDirection] = useState(false);
+  //Upcoming Movies
+  const [upcomingIndex, setUpcomingIndex] = useState(0);
+  const [upcomingDirection, setUpcomingDirection] = useState(false);
+
   const [leaving, setLeaving] = useState(false);
+  const toggleLeaving = () => {
+    setLeaving((prev) => !prev);
+  };
+
+  //Latest movies Index function
   const increaseIndex = () => {
     if (nowPlaying) {
       if (leaving) return;
       toggleLeaving();
+      setDirection(true);
       const totalMovies = nowPlaying.results.length - 1;
       const maxIndex = Math.floor(totalMovies / offset) - 1;
       setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
   };
-  const toggleLeaving = () => setLeaving((prev) => !prev);
+  //Top Rated Movies Index function
+  const topIncreaseIndex = () => {
+    if (topRated) {
+      if (leaving) return;
+      toggleLeaving();
+      setTopDirection(true);
+      const totalMovies = topRated.results.length - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1;
+      setTopIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
+    }
+  };
+  //Upcoming Movies Index function
+  const upcomingIncreaseIndex = () => {
+    if (upcoming) {
+      if (leaving) return;
+      toggleLeaving();
+      setUpcomingDirection(true);
+      const totalMovies = upcoming.results.length - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1;
+      setUpcomingIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
+    }
+  };
+
   const onBoxClicked = (movieId: number) => {
     history.push(`/movies/${movieId}`);
   };
+
+  const topBoxClicked = (movieId: number) => {
+    history.push(`/movies/top_rated/${movieId}`);
+  };
+
+  const upComingBoxClicked = (movieId: number) => {
+    history.push(`/movies/upcoming/${movieId}`);
+  };
+
   const onOverlayClick = () => history.push("/");
+
+  //Latest movies
   const clickedMovie =
     bigMovieMatch?.params.movieId &&
     nowPlaying?.results.find(
       (movie) => movie.id + "" === bigMovieMatch.params.movieId
+    );
+
+  //Top Rated Movies
+  const topClickMovie =
+    topBigMovieMatch?.params.movieId &&
+    topRated?.results.find(
+      (movie) => movie.id + "" === topBigMovieMatch.params.movieId
+    );
+
+  //Upcoming movies
+  const upClickMovie =
+    upBigMovieMatch?.params.movieId &&
+    upcoming?.results.find(
+      (movie) => movie.id + "" === upBigMovieMatch.params.movieId
     );
 
   return (
@@ -217,14 +320,13 @@ function Home() {
       ) : (
         <>
           <Banner
-            onClick={increaseIndex}
             bgPhoto={makeImagePath(nowPlaying?.results[0].backdrop_path || "")}
           >
             <Title>{nowPlaying?.results[0].title}</Title>
             <Overview>{nowPlaying?.results[0].overview}</Overview>
           </Banner>
-          <Slider style={{ top: -230 }}>
-            <Category>1</Category>
+          <Slider style={{ top: -220 }}>
+            <Category>Latest movies</Category>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
                 variants={rowVariants}
@@ -255,14 +357,18 @@ function Home() {
                   ))}
               </Row>
             </AnimatePresence>
+            <NextButton onClick={increaseIndex}>
+              <FontAwesomeIcon icon={faChevronRight} size="2xl" />
+            </NextButton>
           </Slider>
+          {/* Latest movies 모달 */}
           <AnimatePresence>
             {bigMovieMatch ? (
               <>
                 <Overlay
                   onClick={onOverlayClick}
-                  exit={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                 />
                 <BigMovie
                   layoutId={bigMovieMatch.params.movieId}
@@ -280,14 +386,18 @@ function Home() {
                       />
                       <BigTitle>{clickedMovie.title}</BigTitle>
                       <BigOverview>{clickedMovie.overview}</BigOverview>
+                      <BigAverage>
+                        vote average: {clickedMovie.vote_average}
+                      </BigAverage>
                     </>
                   )}
                 </BigMovie>
               </>
             ) : null}
           </AnimatePresence>
+          {/* 2. Top Rated Movies */}
           <Slider style={{ top: 0 }}>
-            <Category>2</Category>
+            <Category>Top Rated Movies</Category>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
                 variants={rowVariants}
@@ -295,11 +405,11 @@ function Home() {
                 animate="visible"
                 exit="exit"
                 transition={{ type: "tween", duration: 1 }}
-                key={index}
+                key={topIndex}
               >
                 {topRated?.results
                   .slice(1)
-                  .slice(offset * index, offset * index + offset)
+                  .slice(offset * topIndex, offset * topIndex + offset)
                   .map((movie) => (
                     <Box
                       layoutId={movie.id + ""}
@@ -308,7 +418,7 @@ function Home() {
                       initial="normal"
                       whileHover="hover"
                       transition={{ type: "tween" }}
-                      onClick={() => onBoxClicked(movie.id)}
+                      onClick={() => topBoxClicked(movie.id)}
                       bgphoto={makeImagePath(movie.backdrop_path, "w500")}
                     >
                       <Info variants={infoVariants}>
@@ -318,40 +428,47 @@ function Home() {
                   ))}
               </Row>
             </AnimatePresence>
+            <NextButton onClick={topIncreaseIndex}>
+              <FontAwesomeIcon icon={faChevronRight} size="2xl" />
+            </NextButton>
           </Slider>
+          {/* 2. Top Rated Movies 모달 */}
           <AnimatePresence>
-            {bigMovieMatch ? (
+            {topBigMovieMatch ? (
               <>
                 <Overlay
                   onClick={onOverlayClick}
-                  exit={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                 />
                 <BigMovie
-                  layoutId={bigMovieMatch.params.movieId}
+                  layoutId={topBigMovieMatch.params.movieId}
                   style={{ top: scrollY.get() + 100 }}
                 >
-                  {clickedMovie && (
+                  {topClickMovie && (
                     <>
                       <BigCover
                         style={{
                           backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
-                            clickedMovie.backdrop_path,
+                            topClickMovie.backdrop_path,
                             "w500"
                           )})`,
                         }}
                       />
-                      <BigTitle>{clickedMovie.title}</BigTitle>
-                      <BigOverview>{clickedMovie.overview}</BigOverview>
+                      <BigTitle>{topClickMovie.title}</BigTitle>
+                      <BigOverview>{topClickMovie.overview}</BigOverview>
+                      <BigAverage>
+                        vote average: {topClickMovie.vote_average}
+                      </BigAverage>
                     </>
                   )}
                 </BigMovie>
               </>
             ) : null}
           </AnimatePresence>
-
-          <Slider style={{ top: 230 }}>
-            <Category>3</Category>
+          {/* 3. Upcoming Movies */}
+          <Slider style={{ top: 220 }}>
+            <Category>Upcoming Movies</Category>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
                 variants={rowVariants}
@@ -359,20 +476,23 @@ function Home() {
                 animate="visible"
                 exit="exit"
                 transition={{ type: "tween", duration: 1 }}
-                key={index}
+                key={upcomingIndex}
               >
-                {nowPlaying?.results
+                {upcoming?.results
                   .slice(1)
-                  .slice(offset * index, offset * index + offset)
+                  .slice(
+                    offset * upcomingIndex,
+                    offset * upcomingIndex + offset
+                  )
                   .map((movie) => (
                     <Box
-                      layoutId={movie.id + ""}
+                      layoutId={movie.id + "3"}
                       key={movie.id}
                       variants={boxVariants}
                       initial="normal"
                       whileHover="hover"
                       transition={{ type: "tween" }}
-                      onClick={() => onBoxClicked(movie.id)}
+                      onClick={() => upComingBoxClicked(movie.id)}
                       bgphoto={makeImagePath(movie.backdrop_path, "w500")}
                     >
                       <Info variants={infoVariants}>
@@ -382,9 +502,13 @@ function Home() {
                   ))}
               </Row>
             </AnimatePresence>
+            <NextButton onClick={upcomingIncreaseIndex}>
+              <FontAwesomeIcon icon={faChevronRight} size="2xl" />
+            </NextButton>
           </Slider>
+          {/* Upcoming Movies 모달창 */}
           <AnimatePresence>
-            {bigMovieMatch ? (
+            {upBigMovieMatch ? (
               <>
                 <Overlay
                   onClick={onOverlayClick}
@@ -392,21 +516,25 @@ function Home() {
                   animate={{ opacity: 1 }}
                 />
                 <BigMovie
-                  layoutId={bigMovieMatch.params.movieId}
+                  layoutId={upBigMovieMatch.params.movieId + "3"}
                   style={{ top: scrollY.get() + 100 }}
                 >
-                  {clickedMovie && (
+                  {upClickMovie && (
                     <>
                       <BigCover
                         style={{
                           backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
-                            clickedMovie.backdrop_path,
+                            upClickMovie.backdrop_path,
                             "w500"
                           )})`,
                         }}
                       />
-                      <BigTitle>{clickedMovie.title}</BigTitle>
-                      <BigOverview>{clickedMovie.overview}</BigOverview>
+                      <BigTitle>{upClickMovie.title}</BigTitle>
+                      <BigOverview>{upClickMovie.overview}</BigOverview>
+                      <BigAverage>
+                        {" "}
+                        vote average: {upClickMovie.vote_average}
+                      </BigAverage>
                     </>
                   )}
                 </BigMovie>

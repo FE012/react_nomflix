@@ -8,6 +8,7 @@ interface IMovie {
   title: string;
   overview: string;
   id: number;
+  vote_average: number;
 }
 
 //Latest movies
@@ -30,7 +31,15 @@ export interface IGetTopMoviesResult {
   total_results: number;
 }
 
-//Latest movies
+//Upcoming Movies
+export interface IGetTopMoviesResult {
+  page: number;
+  results: IMovie[];
+  total_pages: number;
+  total_results: number;
+}
+
+//Latest Movies
 export function getMovies() {
   return fetch(`${BASE_PATH}/movie/now_playing?api_key=${API_KEY}`).then(
     (response) => response.json()
@@ -40,6 +49,13 @@ export function getMovies() {
 //Top Rated Movies
 export function getTopMovies() {
   return fetch(`${BASE_PATH}/movie/top_rated?api_key=${API_KEY}`).then(
+    (response) => response.json()
+  );
+}
+
+//Upcoming Movies
+export function getUpcomingMovies() {
+  return fetch(`${BASE_PATH}/movie/upcoming?api_key=${API_KEY}`).then(
     (response) => response.json()
   );
 }
