@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
-import { getAiringTv, getPopularTv, getTopRatedTv } from "./apiTv";
+import { getAiringTv, getPopularTv, getTopRatedTv } from "./tvApi";
 
 const Wrapper = styled.div`
   background: black;
