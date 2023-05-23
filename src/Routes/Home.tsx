@@ -7,7 +7,7 @@ import {
   getUpcomingMovies,
   IGetMoviesResult,
   IGetTopMoviesResult,
-} from "./apiMovies";
+} from "./moviesApi";
 import { makeImagePath } from "./util";
 import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
