@@ -7,7 +7,7 @@ import {
   getUpcomingMovies,
   IGetMoviesResult,
   IGetTopMoviesResult,
-} from "./api";
+} from "./apiMovies";
 import { makeImagePath } from "./util";
 import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
@@ -217,7 +217,7 @@ function Home() {
     ["movies", "nowPlaying"],
     getMovies
   );
-  console.log(nowPlaying);
+
   //Top Rated Movies data
   const { data: topRated } = useQuery<IGetTopMoviesResult>(
     ["movies", "topRated"],
