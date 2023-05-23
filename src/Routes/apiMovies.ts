@@ -1,7 +1,7 @@
 const API_KEY = "30b9835919252c28ccb9f37e2f04774e";
 const BASE_PATH = "https://api.themoviedb.org/3";
 
-//common result
+//common result interface
 interface IMovie {
   backdrop_path: string;
   poster_path: string;
@@ -11,7 +11,7 @@ interface IMovie {
   vote_average: number;
 }
 
-//Latest movies
+//Latest movies interface
 export interface IGetMoviesResult {
   dates: {
     maximum: string;
@@ -23,7 +23,7 @@ export interface IGetMoviesResult {
   total_results: number;
 }
 
-//Top Rated Movies
+//Top Rated Movies interface
 export interface IGetTopMoviesResult {
   page: number;
   results: IMovie[];
@@ -31,7 +31,7 @@ export interface IGetTopMoviesResult {
   total_results: number;
 }
 
-//Upcoming Movies
+//Upcoming Movies interface
 export interface IGetTopMoviesResult {
   page: number;
   results: IMovie[];
