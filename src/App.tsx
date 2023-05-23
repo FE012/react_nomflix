@@ -11,7 +11,7 @@ import Tv from "./Routes/Tv";
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={process.env.PUBLIC_URL}>
       <Router>
         <Header />
         <Switch>
