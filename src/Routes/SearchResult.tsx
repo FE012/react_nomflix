@@ -2,8 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useHistory } from "react-router-dom";
 import styled from "styled-components";
-import { getSearchMovie, getSearchTv } from "./searchApi";
-import { makeImagePath } from "./util";
+import { getSearch } from "./api";
+import { makeImagePath, noSearchDataImage } from "./util";
+
+const Row = styled(motion.div)`
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(6, 1fr);
+  position: absolute;
+  width: 90%;
+`;
 
 const Box = styled(motion.div)<{ bgphoto: string }>`
   background-color: white;
@@ -21,53 +29,92 @@ const Box = styled(motion.div)<{ bgphoto: string }>`
   }
 `;
 
-const Row = styled(motion.div)`
-  display: grid;
-  gap: 5px;
-  grid-template-columns: repeat(6, 1fr);
+const Info = styled(motion.div)`
+  padding: 10px;
+  background-color: ${(props) => props.theme.black.lighter};
+  opacity: 0;
   position: absolute;
   width: 100%;
-`;
-
-const Info = styled(motion.div)`
+  bottom: 0;
   h4 {
-    font-weight: 400;
+    text-align: center;
+    font-size: 16px;
   }
 `;
 
+const NoSearchData = styled.div<{ imgUrl: string }>`
+  position: absolute;
+  top: 40%;
+  padding-top: 100px;
+  width: 90%;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 500;
+  background: url(${(props) => props.imgUrl}) no-repeat center top;
+`;
+
+const boxVariants = {
+  normal: {
+    scale: 1,
+  },
+  hover: {
+    zIndex: 99,
+    scale: 1.5,
+    y: -50,
+    transition: {
+      delay: 0.5,
+      duration: 0.3,
+      type: "tween",
+    },
+  },
+};
+
+const infoVariants = {
+  hover: {
+    opacity: 1,
+    transition: {
+      delay: 0.5,
+      duration: 0.3,
+      type: "tween",
+    },
+  },
+};
+
 function SearchResult({ keyword }: { keyword: string }) {
-  const { data: searchMovie } = useQuery(["search", keyword], () =>
-    getSearchMovie(keyword)
+  const { isLoading, data: search } = useQuery(["search", keyword], () =>
+    getSearch(keyword)
   );
-  const { data: searchTv } = useQuery(["search", keyword], () =>
-    getSearchTv(keyword)
-  );
-  console.log(searchMovie);
+
+  console.log(search);
 
   const history = useHistory();
   const onBoxClicked = (id: number) => {};
   return (
     <>
-      {searchMovie ? (
+      {search && search.results.length > 0 ? (
         <Row>
-          {searchMovie?.results.map((movie: any) => (
+          {search?.results.map((movie: any) => (
             <Box
               layoutId={movie.id + ""}
               key={movie.id}
-              // variants={boxVariants}
+              variants={boxVariants}
               initial="normal"
               whileHover="hover"
               transition={{ type: "tween" }}
               onClick={() => onBoxClicked(movie.id)}
-              bgphoto={makeImagePath(movie.backdrop_path, "w500")}
+              bgphoto={makeImagePath(movie.backdrop_path || "", "w500")}
             >
-              <Info>
-                <h4>{movie.title}</h4>
+              <Info variants={infoVariants}>
+                <h4>{movie.title ? movie.title : movie.name}</h4>
               </Info>
             </Box>
           ))}
         </Row>
-      ) : null}
+      ) : (
+        <NoSearchData imgUrl={noSearchDataImage() || ""}>
+          '{keyword}'검색 결과가 없습니다.
+        </NoSearchData>
+      )}
     </>
   );
 }
