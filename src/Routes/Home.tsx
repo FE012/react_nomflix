@@ -7,7 +7,7 @@ import {
   getUpcomingMovies,
   IGetMoviesResult,
   IGetTopMoviesResult,
-} from "./moviesApi";
+} from "./api";
 import { makeImagePath } from "./util";
 import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
@@ -29,26 +29,27 @@ const Banner = styled.div<{ bgPhoto: string }>`
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 60px;
+  justify-content: flex-start;
+  padding: 160px 60px;
   background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)),
     url(${(props) => props.bgPhoto});
   background-size: cover;
 `;
 
 const Title = styled.h2`
-  font-size: 68px;
+  font-size: 50px;
+  font-weight: 600;
   margin-bottom: 20px;
 `;
 
 const Overview = styled.p`
   font-size: 20px;
-  width: 50%;
+  width: 40%;
 `;
 
 const Category = styled.h3`
-  font-size: 23px;
-  font-weight: 400;
+  font-size: 22px;
+  font-weight: 600;
   margin-bottom: 10px;
   margin-left: 5px;
 `;
@@ -83,6 +84,7 @@ const Box = styled(motion.div)<{ bgphoto: string }>`
   background-position: center center;
   height: 150px;
   font-size: 66px;
+  border-radius: 2.5px;
   cursor: pointer;
   &:first-child {
     transform-origin: center left;
@@ -325,8 +327,9 @@ function Home() {
             <Title>{nowPlaying?.results[0].title}</Title>
             <Overview>{nowPlaying?.results[0].overview}</Overview>
           </Banner>
-          <Slider style={{ top: -220 }}>
-            <Category>Latest movies</Category>
+          {/* 1. Latest Movies */}
+          <Slider style={{ top: -230 }}>
+            <Category>Latest Movies</Category>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
                 variants={rowVariants}
@@ -396,7 +399,7 @@ function Home() {
             ) : null}
           </AnimatePresence>
           {/* 2. Top Rated Movies */}
-          <Slider style={{ top: 0 }}>
+          <Slider style={{ top: -30 }}>
             <Category>Top Rated Movies</Category>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
@@ -467,7 +470,7 @@ function Home() {
             ) : null}
           </AnimatePresence>
           {/* 3. Upcoming Movies */}
-          <Slider style={{ top: 220 }}>
+          <Slider style={{ top: 170 }}>
             <Category>Upcoming Movies</Category>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
