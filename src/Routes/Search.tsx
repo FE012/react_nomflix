@@ -3,7 +3,7 @@ import styled from "styled-components";
 import SearchResult from "./SearchResult";
 
 const Wrapper = styled.div`
-  padding: 130px 55px 0px 55px;
+  padding: 150px 60px;
 `;
 
 const TopWrap = styled.div`
@@ -25,7 +25,7 @@ function Search() {
   return (
     <Wrapper>
       <TopWrap>
-        <Notice>'{keyword}'(으)로 검색한 결과</Notice>
+        <Notice>'{keyword}' (으)로 검색한 결과</Notice>
       </TopWrap>
       <BottomWrap>{keyword && <SearchResult keyword={keyword} />}</BottomWrap>
     </Wrapper>
