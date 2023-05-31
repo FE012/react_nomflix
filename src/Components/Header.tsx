@@ -13,7 +13,7 @@ const Nav = styled(motion.nav)`
   top: 0;
   font-size: 15px;
   font-weight: 400;
-  padding: 15px 55px;
+  padding: 20px 55px;
   color: white;
 `;
 
@@ -46,6 +46,7 @@ const Item = styled.li`
   display: flex;
   justify-content: center;
   flex-direction: column;
+  font-size: 15px;
   &:hover {
     color: ${(props) => props.theme.white.hoverColor};
     cursor: pointer;
@@ -181,7 +182,7 @@ function Header() {
           </Item>
           <Item>
             <Link to="/tv">
-              Tv Shows {tvMatch && <Circle layoutId="circle" />}
+              TV Shows {tvMatch && <Circle layoutId="circle" />}
             </Link>
           </Item>
         </Items>
