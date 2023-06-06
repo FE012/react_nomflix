@@ -7,12 +7,15 @@ import {
   getUpcomingMovies,
   IGetMoviesResult,
   IGetTopMoviesResult,
+  LIST_TYPE,
 } from "./api";
 import { makeImagePath } from "./util";
 import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import ReactStars from "react-stars";
+import Modal from "../Components/Modal";
 
 const Wrapper = styled.div`
   background: black;
@@ -43,8 +46,9 @@ const Title = styled.h2`
 `;
 
 const Overview = styled.p`
-  font-size: 20px;
+  font-size: 18px;
   width: 40%;
+  line-height: 1.3em;
 `;
 
 const Category = styled.h3`
@@ -107,6 +111,7 @@ const Info = styled(motion.div)`
   }
 `;
 
+// Modal
 const Overlay = styled(motion.div)`
   position: fixed;
   top: 0;
@@ -116,9 +121,10 @@ const Overlay = styled(motion.div)`
   opacity: 0;
 `;
 
+// Modal
 const BigMovie = styled(motion.div)`
   position: absolute;
-  width: 40vw;
+  width: 50vw;
   height: 80vh;
   left: 0;
   right: 0;
@@ -139,24 +145,64 @@ const BigCover = styled.div`
   height: 350px;
 `;
 
-const BigTitle = styled.h3`
+const BigPoster = styled.div`
+  width: 25%;
+  height: 200px;
+  position: absolute;
+  top: 200px;
+  left: 30px;
+  img {
+    width: 100%;
+  }
+`;
+
+const BigInfoTitle = styled.div`
   color: ${(props) => props.theme.white.lighter};
-  padding: 10px;
-  font-size: 36px;
-  position: relative;
-  top: -60px;
+  position: absolute;
+  top: 255px;
+  left: 230px;
+`;
+
+const BigTitle = styled.h3`
+  font-size: 34px;
+  font-weight: 600;
+  margin-bottom: 5px;
+`;
+
+const BigTitleSmall = styled.h4`
+  font-weight: 400;
+`;
+
+const BigInfo = styled.div`
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 360px;
+  left: 230px;
+  li {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    .ratingValue {
+      margin-left: 4px;
+    }
+  }
+`;
+
+const BigInfoItem = styled.h4``;
+
+const BigAverage = styled.h4`
+  margin: 10px;
 `;
 
 const BigOverview = styled.p`
-  padding: 20px;
-  position: relative;
-  top: -80px;
+  padding: 10px;
+  position: absolute;
+  top: 400px;
+  left: 220px;
   color: ${(props) => props.theme.white.lighter};
-`;
-
-const BigAverage = styled.h4`
-  font-size: 22px;
-  margin: 10px;
+  width: 65%;
+  word-break: keep-all;
 `;
 
 const rowVariants = {
@@ -202,51 +248,44 @@ const offset = 6;
 function Home() {
   const { scrollY } = useScroll();
   const history = useHistory();
-  //Latest Movies
+  // 라우터 매치 (Latest Movies, Top Rated Movies, Upcoming Movies)
   const bigMovieMatch = useRouteMatch<{ movieId: string }>("/movies/:movieId");
-  //Top Rated Movies
   const topBigMovieMatch = useRouteMatch<{ movieId: string }>(
     "/movies/top_rated/:movieId"
   );
-
-  //Upcoming Movies
   const upBigMovieMatch = useRouteMatch<{ movieId: string }>(
     "/movies/upcoming/:movieId"
   );
-
-  //Latest Movies data
+  console.log(bigMovieMatch);
+  // 리액트 쿼리로 data 불러오기 (Latest Movies, Top Rated Movies, Upcoming Movies)
   const { data: nowPlaying, isLoading } = useQuery<IGetMoviesResult>(
     ["movies", "nowPlaying"],
     getMovies
   );
-
-  //Top Rated Movies data
   const { data: topRated } = useQuery<IGetTopMoviesResult>(
     ["movies", "topRated"],
     getTopMovies
   );
-  //Upcoming Movies data
   const { data: upcoming } = useQuery<IGetTopMoviesResult>(
     ["movies", "upcoming"],
     getUpcomingMovies
   );
 
-  //Latest movies
+  //slider index 저장하기 (Latest Movies, Top Rated Movies, Upcoming Movies)
   const [index, setIndex] = useState(0);
-  const [direction, setDirection] = useState(false);
-  //Top Rated Movies
   const [topIndex, setTopIndex] = useState(0);
-  const [topDirection, setTopDirection] = useState(false);
-  //Upcoming Movies
   const [upcomingIndex, setUpcomingIndex] = useState(0);
+  const [direction, setDirection] = useState(false);
+  const [topDirection, setTopDirection] = useState(false);
   const [upcomingDirection, setUpcomingDirection] = useState(false);
 
+  //slider 애니메이션 효과에 텀을 두기 위한 state
   const [leaving, setLeaving] = useState(false);
   const toggleLeaving = () => {
     setLeaving((prev) => !prev);
   };
 
-  //Latest movies Index function
+  //slider Index function (Latest Movies, Top Rated Movies, Upcoming Movies)
   const increaseIndex = () => {
     if (nowPlaying) {
       if (leaving) return;
@@ -280,40 +319,46 @@ function Home() {
     }
   };
 
+  //Modal
+  // slider의 영화를 클릭하면 url 추가되게 (Latest Movies, Top Rated Movies, Upcoming Movies)
   const onBoxClicked = (movieId: number) => {
     history.push(`/movies/${movieId}`);
   };
-
   const topBoxClicked = (movieId: number) => {
     history.push(`/movies/top_rated/${movieId}`);
   };
-
   const upComingBoxClicked = (movieId: number) => {
     history.push(`/movies/upcoming/${movieId}`);
   };
 
+  //Modal
   const onOverlayClick = () => history.push("/");
 
-  //Latest movies
+  // 클릭한 영화의 개별 데이터 (Latest Movies, Top Rated Movies, Upcoming Movies)
   const clickedMovie =
     bigMovieMatch?.params.movieId &&
     nowPlaying?.results.find(
       (movie) => movie.id + "" === bigMovieMatch.params.movieId
     );
-
-  //Top Rated Movies
   const topClickMovie =
     topBigMovieMatch?.params.movieId &&
     topRated?.results.find(
       (movie) => movie.id + "" === topBigMovieMatch.params.movieId
     );
-
-  //Upcoming movies
   const upClickMovie =
     upBigMovieMatch?.params.movieId &&
     upcoming?.results.find(
       (movie) => movie.id + "" === upBigMovieMatch.params.movieId
     );
+
+  // 영화의 개봉년도만 자르는 함수
+  const getYear = (date: string) => {
+    if (date) {
+      return date.split("-")[0];
+    } else {
+      return "";
+    }
+  };
 
   return (
     <Wrapper>
@@ -364,40 +409,17 @@ function Home() {
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
             </NextButton>
           </Slider>
-          {/* Latest movies 모달 */}
+          {/* 1. Latest movies 모달창 */}
           <AnimatePresence>
             {bigMovieMatch ? (
-              <>
-                <Overlay
-                  onClick={onOverlayClick}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                />
-                <BigMovie
-                  layoutId={bigMovieMatch.params.movieId}
-                  style={{ top: scrollY.get() + 100 }}
-                >
-                  {clickedMovie && (
-                    <>
-                      <BigCover
-                        style={{
-                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
-                            clickedMovie.backdrop_path,
-                            "w500"
-                          )})`,
-                        }}
-                      />
-                      <BigTitle>{clickedMovie.title}</BigTitle>
-                      <BigOverview>{clickedMovie.overview}</BigOverview>
-                      <BigAverage>
-                        vote average: {clickedMovie.vote_average}
-                      </BigAverage>
-                    </>
-                  )}
-                </BigMovie>
-              </>
+              <Modal
+                dataId={bigMovieMatch.params.movieId}
+                mediaType={"movie"}
+                listType={LIST_TYPE[0]}
+              />
             ) : null}
           </AnimatePresence>
+
           {/* 2. Top Rated Movies */}
           <Slider style={{ top: -30 }}>
             <Category>Top Rated Movies</Category>
@@ -509,7 +531,7 @@ function Home() {
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
             </NextButton>
           </Slider>
-          {/* Upcoming Movies 모달창 */}
+          {/* 3. Upcoming Movies 모달창 */}
           <AnimatePresence>
             {upBigMovieMatch ? (
               <>
