@@ -20,7 +20,6 @@ const BottomWrap = styled.div``;
 function Search() {
   const location = useLocation();
   const keyword = new URLSearchParams(location.search).get("keyword");
-  console.log(keyword);
 
   return (
     <Wrapper>
