@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
-import { motion, AnimatePresence, useScroll } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { makeImagePath } from "./util";
 import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
-import { getAiringTv, getPopularTv, getTopRatedTv } from "./api";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
+import { getAiringTv, getPopularTv, getTopRatedTv, LIST_TYPE } from "./api";
+import Modal from "../Components/Modal";
 
 const Wrapper = styled.div`
   background: black;
@@ -63,6 +65,17 @@ const NextButton = styled.div`
   }
 `;
 
+const PrevButton = styled.div`
+  position: absolute;
+  left: 10px;
+  top: 100px;
+  border-radius: 7.5px;
+  &:hover {
+    cursor: pointer;
+    scale: 1.7;
+  }
+`;
+
 const Row = styled(motion.div)`
   display: grid;
   gap: 5px;
@@ -101,67 +114,27 @@ const Info = styled(motion.div)`
   }
 `;
 
-const Overlay = styled(motion.div)`
-  position: fixed;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  opacity: 0;
-`;
-
-const BigMovie = styled(motion.div)`
-  position: absolute;
-  width: 40vw;
-  height: 80vh;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  overflow: hidden;
-  border-radius: 15px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background-color: ${(props) => props.theme.black.lighter};
-  z-index: 99;
-`;
-
-const BigCover = styled.div`
-  width: 100%;
-  background-size: cover;
-  background-position: center center;
-  height: 350px;
-`;
-
-const BigTitle = styled.h3`
-  color: ${(props) => props.theme.white.lighter};
-  padding: 10px;
-  font-size: 36px;
-  position: relative;
-  top: -60px;
-`;
-
-const BigOverview = styled.p`
-  padding: 20px;
-  position: relative;
-  top: -80px;
-  color: ${(props) => props.theme.white.lighter};
-`;
-
-const BigAverage = styled.h4`
-  font-size: 22px;
-  margin: 10px;
-`;
-
 const rowVariants = {
-  hidden: {
+  //next 버튼 눌렀을때 애니메이션
+  nextHidden: {
     x: window.innerWidth + 5,
   },
-  visible: {
+  nextVisible: {
     x: 0,
   },
-  exit: {
+  nextExit: {
     x: -window.innerWidth - 5,
+  },
+
+  //prev 버튼 눌렀을때 애니메이션
+  prevHidden: {
+    x: -window.innerWidth - 5,
+  },
+  prevVisible: {
+    x: 0,
+  },
+  prevExit: {
+    x: window.innerWidth + 5,
   },
 };
 
@@ -194,22 +167,19 @@ const infoVariants = {
 const offset = 6;
 
 function Tv() {
-  const { scrollY } = useScroll();
   const history = useHistory();
-
-  //Airing Tv
+  // Tv 라우터 매치 (Airing Today, Top Rated Tv, Popular Tv)
   const bigTvMatch = useRouteMatch<{ tvId: string }>("/tv/airing/:tvId");
-  //Popular Tv
-  const popularBigTvMatch = useRouteMatch<{ tvId: string }>(
-    "/tv/popular/:tvId"
-  );
-  //Top Rated Tv
   const topRatedBigTvMatch = useRouteMatch<{ tvId: string }>(
     "/tv/top_rated/:tvId"
   );
 
+  const popularBigTvMatch = useRouteMatch<{ tvId: string }>(
+    "/tv/popular/:tvId"
+  );
+
+  // 3가지 api 한번에 불러오는 리액트 쿼리(useMultipleQuery)
   const useMultipleQuery = () => {
-    // const latest = useQuery(["latest"], getLatestTv);
     const airing = useQuery(["airing"], getAiringTv);
     const popular = useQuery(["popular"], getPopularTv);
     const topRated = useQuery(["topRated"], getTopRatedTv);
@@ -218,58 +188,83 @@ function Tv() {
   };
 
   const [
-    // { isLoading: loadingLatest, data: latestData },
     { isLoading: loadingAiring, data: airingData },
     { data: popularData },
     { data: topRatedData },
   ] = useMultipleQuery();
 
-  //Airing Tv
+  //slider index 저장하기 (Airing Today, Top Rated Tv, Popular Tv)
   const [index, setIndex] = useState(0);
-  const [direction, setDirection] = useState(false);
-  //Popular Tv
-  const [popularIndex, setPopularIndex] = useState(0);
-  const [popularDirection, setPopularDirection] = useState(false);
-  //Top Rated Tv
   const [topIndex, setTopIndex] = useState(0);
-  const [topDirection, setTopDirection] = useState(false);
+  const [popularIndex, setPopularIndex] = useState(0);
+  const [direction, setDirection] = useState(true);
+  const [topDirection, setTopDirection] = useState(true);
+  const [popularDirection, setPopularDirection] = useState(true);
 
+  //slider 애니메이션 효과에 텀을 두기 위한 state
   const [leaving, setLeaving] = useState(false);
   const toggleLeaving = () => {
     setLeaving((prev) => !prev);
   };
 
-  // Airing Tv Index function
+  //slider Index증가 function (Airing Tv, Top Rated Tv, Popular Tv)
   const increaseIndex = () => {
     if (airingData) {
       if (leaving) return;
       toggleLeaving();
-      setDirection(true);
       const totalMovies = airingData.results.length - 1;
       const maxIndex = Math.floor(totalMovies / offset) - 1;
       setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
   };
-  //Popular Tv Index function
+  const topIncreaseIndex = () => {
+    if (topRatedData) {
+      if (leaving) return;
+      toggleLeaving();
+      const totalMovies = topRatedData.results.length - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1;
+      setTopIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
+    }
+  };
   const popularIncreaseIndex = () => {
     if (popularData) {
       if (leaving) return;
       toggleLeaving();
-      setPopularDirection(true);
       const totalMovies = popularData.results.length - 1;
       const maxIndex = Math.floor(totalMovies / offset) - 1;
       setPopularIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
   };
-  //Top Rated Index function
-  const topIncreaseIndex = () => {
+
+  //slider Index 감소 function (Airing Tv, Top Rated Tv, Popular Tv)
+  const decreaseIndex = () => {
+    if (airingData) {
+      if (leaving) return;
+      toggleLeaving();
+      const totalMovies = airingData.results.length - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1;
+      const minIndex = 0;
+      setIndex((prev) => (prev === minIndex ? maxIndex : prev - 1));
+    }
+  };
+  const topDecreaseIndex = () => {
     if (topRatedData) {
       if (leaving) return;
       toggleLeaving();
-      setTopDirection(true);
       const totalMovies = topRatedData.results.length - 1;
       const maxIndex = Math.floor(totalMovies / offset) - 1;
-      setTopIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
+      const minIndex = 0;
+      setTopIndex((prev) => (prev === minIndex ? maxIndex : prev - 1));
+    }
+  };
+  const popularDecreaseIndex = () => {
+    if (popularData) {
+      if (leaving) return;
+      toggleLeaving();
+      const totalMovies = popularData.results.length - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1;
+      const minIndex = 0;
+      setPopularIndex((prev) => (prev === minIndex ? maxIndex : prev - 1));
     }
   };
 
@@ -288,28 +283,7 @@ function Tv() {
     history.push(`/tv/top_Rated/${tvId}`);
   };
 
-  const onOverlayClick = () => history.push("/tv");
-
-  //Airing Tv
-  const clickedTv =
-    bigTvMatch?.params.tvId &&
-    airingData?.results.find(
-      (tv: any) => tv.id + "" === bigTvMatch.params.tvId
-    );
-
-  //Popular Tv
-  const popularClickTv =
-    popularBigTvMatch?.params.tvId &&
-    popularData?.results.find(
-      (tv: any) => tv.id + "" === popularBigTvMatch.params.tvId
-    );
-
-  //Top Rated Tv
-  const topClickTv =
-    topRatedBigTvMatch?.params.tvId &&
-    topRatedData?.results.find(
-      (tv: any) => tv.id + "" === topRatedBigTvMatch.params.tvId
-    );
+  //const onOverlayClick = () => history.push("/tv");
 
   return (
     <Wrapper>
@@ -323,15 +297,16 @@ function Tv() {
             <Title>{airingData?.results[0].name}</Title>
             <Overview>{airingData?.results[0].overview}</Overview>
           </Banner>
+          {/* 1. Airing Today ㅊ*/}
           <Slider style={{ top: -220 }}>
             <Category>Airing today</Category>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
                 variants={rowVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                transition={{ type: "tween", duration: 0.8 }}
+                initial={direction ? "nextHidden" : "prevHidden"}
+                animate={direction ? "nextVisible" : "prevVisible"}
+                exit={direction ? "nextExit" : "prevExit"}
+                transition={{ type: "tween", duration: 1 }}
                 key={index}
               >
                 {airingData?.results
@@ -339,7 +314,7 @@ function Tv() {
                   .slice(offset * index, offset * index + offset)
                   .map((tv: any) => (
                     <Box
-                      layoutId={tv.id + ""}
+                      layoutId={tv.id + "airing"}
                       key={tv.id}
                       variants={boxVariants}
                       initial="normal"
@@ -355,53 +330,43 @@ function Tv() {
                   ))}
               </Row>
             </AnimatePresence>
-            <NextButton onClick={increaseIndex}>
+            <NextButton
+              onClick={() => {
+                setDirection(true);
+                increaseIndex();
+              }}
+            >
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
             </NextButton>
+            <PrevButton
+              onClick={() => {
+                setDirection(false);
+                decreaseIndex();
+              }}
+            >
+              <FontAwesomeIcon icon={faChevronLeft} size="2xl" />
+            </PrevButton>
           </Slider>
-          {/* Airing 모달 */}
+          {/* 1. Airing 모달창 */}
           <AnimatePresence>
             {bigTvMatch ? (
-              <>
-                <Overlay
-                  onClick={onOverlayClick}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                />
-                <BigMovie
-                  layoutId={bigTvMatch.params.tvId}
-                  style={{ top: scrollY.get() + 100 }}
-                >
-                  {clickedTv && (
-                    <>
-                      <BigCover
-                        style={{
-                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
-                            clickedTv.backdrop_path,
-                            "w500"
-                          )})`,
-                        }}
-                      />
-                      <BigTitle>{clickedTv.name}</BigTitle>
-                      <BigOverview>{clickedTv.overview}</BigOverview>
-                      <BigAverage>
-                        vote average: {clickedTv.vote_average}
-                      </BigAverage>
-                    </>
-                  )}
-                </BigMovie>
-              </>
+              <Modal
+                dataId={bigTvMatch.params.tvId}
+                mediaType={"tv"}
+                listType={LIST_TYPE[3]}
+              />
             ) : null}
           </AnimatePresence>
-          {/* 2.Top Rated Tv */}
+
+          {/* 2.Top Rated Tv Slider */}
           <Slider style={{ top: 0 }}>
             <Category>Top Rated </Category>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
                 variants={rowVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
+                initial={topDirection ? "nextHidden" : "prevHidden"}
+                animate={topDirection ? "nextVisible" : "prevVisible"}
+                exit={topDirection ? "nextExit" : "prevExit"}
                 transition={{ type: "tween", duration: 1 }}
                 key={topIndex}
               >
@@ -410,7 +375,7 @@ function Tv() {
                   .slice(offset * topIndex, offset * topIndex + offset)
                   .map((tv: any) => (
                     <Box
-                      layoutId={tv.id + "3"}
+                      layoutId={tv.id + ""}
                       key={tv.id}
                       variants={boxVariants}
                       initial="normal"
@@ -426,53 +391,42 @@ function Tv() {
                   ))}
               </Row>
             </AnimatePresence>
-            <NextButton onClick={topIncreaseIndex}>
+            <NextButton
+              onClick={() => {
+                setTopDirection(true);
+                topIncreaseIndex();
+              }}
+            >
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
             </NextButton>
+            <PrevButton
+              onClick={() => {
+                setTopDirection(false);
+                topDecreaseIndex();
+              }}
+            >
+              <FontAwesomeIcon icon={faChevronLeft} size="2xl" />
+            </PrevButton>
           </Slider>
-          {/*Top Rated 모달창 */}
+          {/*2. Top Rated 모달창 */}
           <AnimatePresence>
             {topRatedBigTvMatch ? (
-              <>
-                <Overlay
-                  onClick={onOverlayClick}
-                  exit={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                />
-                <BigMovie
-                  layoutId={topRatedBigTvMatch.params.tvId + "3"}
-                  style={{ top: scrollY.get() + 100 }}
-                >
-                  {topClickTv && (
-                    <>
-                      <BigCover
-                        style={{
-                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
-                            topClickTv.backdrop_path,
-                            "w500"
-                          )})`,
-                        }}
-                      />
-                      <BigTitle>{topClickTv.name}</BigTitle>
-                      <BigOverview>{topClickTv.overview}</BigOverview>
-                      <BigAverage>
-                        vote average: {topClickTv.vote_average}
-                      </BigAverage>
-                    </>
-                  )}
-                </BigMovie>
-              </>
+              <Modal
+                dataId={topRatedBigTvMatch.params.tvId}
+                mediaType={"tv"}
+                listType={LIST_TYPE[4]}
+              />
             ) : null}
           </AnimatePresence>
-          {/* 3.Popular Tv */}
+          {/* 3.Popular Tv Slider */}
           <Slider style={{ top: 220 }}>
             <Category>Popular </Category>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
                 variants={rowVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
+                initial={popularDirection ? "nextHidden" : "prevHidden"}
+                animate={popularDirection ? "nextVisible" : "prevVisible"}
+                exit={popularDirection ? "nextExit" : "prevExit"}
                 transition={{ type: "tween", duration: 1 }}
                 key={popularIndex}
               >
@@ -481,7 +435,7 @@ function Tv() {
                   .slice(offset * popularIndex, offset * popularIndex + offset)
                   .map((tv: any) => (
                     <Box
-                      layoutId={tv.id + "2"}
+                      layoutId={tv.id + ""}
                       key={tv.id}
                       variants={boxVariants}
                       initial="normal"
@@ -497,42 +451,31 @@ function Tv() {
                   ))}
               </Row>
             </AnimatePresence>
-            <NextButton onClick={popularIncreaseIndex}>
+            <NextButton
+              onClick={() => {
+                setPopularDirection(true);
+                popularIncreaseIndex();
+              }}
+            >
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
             </NextButton>
+            <PrevButton
+              onClick={() => {
+                setPopularDirection(false);
+                popularDecreaseIndex();
+              }}
+            >
+              <FontAwesomeIcon icon={faChevronLeft} size="2xl" />
+            </PrevButton>
           </Slider>
           {/* 3.Popular Tv 모달 */}
           <AnimatePresence>
             {popularBigTvMatch ? (
-              <>
-                <Overlay
-                  onClick={onOverlayClick}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                />
-                <BigMovie
-                  layoutId={popularBigTvMatch.params.tvId + "2"}
-                  style={{ top: scrollY.get() + 100 }}
-                >
-                  {popularClickTv && (
-                    <>
-                      <BigCover
-                        style={{
-                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
-                            popularClickTv.backdrop_path,
-                            "w500"
-                          )})`,
-                        }}
-                      />
-                      <BigTitle>{popularClickTv.name}</BigTitle>
-                      <BigOverview>{popularClickTv.overview}</BigOverview>
-                      <BigAverage>
-                        vote average: {popularClickTv.vote_average}
-                      </BigAverage>
-                    </>
-                  )}
-                </BigMovie>
-              </>
+              <Modal
+                dataId={popularBigTvMatch.params.tvId}
+                mediaType={"tv"}
+                listType={LIST_TYPE[5]}
+              />
             ) : null}
           </AnimatePresence>
         </>
