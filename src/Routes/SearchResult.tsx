@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion, useScroll } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import styled from "styled-components";
+import Modal from "../Components/Modal";
 import { getSearch } from "./api";
 import { makeImagePath, noSearchDataImage } from "./util";
 
@@ -80,77 +81,20 @@ const infoVariants = {
   },
 };
 
-//모달창 스타일 컴포넌트
-const Overlay = styled(motion.div)`
-  position: fixed;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  opacity: 0;
-`;
-
-const BigMovie = styled(motion.div)`
-  position: absolute;
-  width: 40vw;
-  height: 80vh;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  overflow: hidden;
-  border-radius: 15px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background-color: ${(props) => props.theme.black.lighter};
-  z-index: 99;
-`;
-
-const BigCover = styled.div`
-  width: 100%;
-  background-size: cover;
-  background-position: center center;
-  height: 350px;
-`;
-
-const BigTitle = styled.h3`
-  color: ${(props) => props.theme.white.lighter};
-  padding: 10px;
-  font-size: 36px;
-  position: relative;
-  top: -60px;
-`;
-
-const BigOverview = styled.p`
-  padding: 20px;
-  position: relative;
-  top: -80px;
-  color: ${(props) => props.theme.white.lighter};
-`;
-
-const BigAverage = styled.h4`
-  font-size: 22px;
-  margin: 10px;
-`;
-
 function SearchResult({ keyword }: { keyword: string }) {
   const { data: search } = useQuery(["search", keyword], () =>
     getSearch(keyword)
   );
   console.log(search);
-  const { scrollY } = useScroll();
-  const bigMatch = useRouteMatch<{ id: string }>("/search/:media/:id");
+  const bigMatch = useRouteMatch<{ id: string; media: string }>(
+    "/search/:media/:id"
+  );
   console.log(bigMatch);
   const history = useHistory();
   const onBoxClicked = (media: string, id: number) => {
     history.push(`/search/${media}/${id}?keyword=${keyword}`);
   };
-  const onOverlayClick = () => history.goBack();
 
-  const clickedBox =
-    bigMatch?.params.id &&
-    search?.results.find((media: any) => media.id + "" === bigMatch.params.id);
-  console.log(clickedBox);
   return (
     <>
       {search && search.results.length > 0 ? (
@@ -175,39 +119,10 @@ function SearchResult({ keyword }: { keyword: string }) {
           </Row>
           <AnimatePresence>
             {bigMatch ? (
-              <>
-                <Overlay
-                  onClick={onOverlayClick}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                />
-                <BigMovie
-                  layoutId={bigMatch.params.id}
-                  style={{ top: scrollY.get() + 100 }}
-                >
-                  {clickedBox && (
-                    <>
-                      <BigCover
-                        style={{
-                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
-                            clickedBox.backdrop_path,
-                            "w500"
-                          )})`,
-                        }}
-                      />
-                      <BigTitle>
-                        {clickedBox.media_type === "tv"
-                          ? clickedBox.name
-                          : clickedBox.title}
-                      </BigTitle>
-                      <BigOverview>{clickedBox.overview}</BigOverview>
-                      <BigAverage>
-                        vote average: {clickedBox.vote_average}
-                      </BigAverage>
-                    </>
-                  )}
-                </BigMovie>
-              </>
+              <Modal
+                dataId={bigMatch.params.id}
+                mediaType={bigMatch.params.media}
+              />
             ) : null}
           </AnimatePresence>
         </>
