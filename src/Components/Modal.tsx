@@ -16,6 +16,7 @@ const Overlay = styled(motion.div)`
 `;
 
 const BigMovie = styled(motion.div)`
+  overflow-y: scroll;
   position: fixed;
   top: 10vh;
   width: 50vw;
@@ -30,6 +31,17 @@ const BigMovie = styled(motion.div)`
   justify-content: space-between;
   background-color: ${(props) => props.theme.black.lighter};
   z-index: 99;
+  //줄거리가 모달 밖으로 넘어갔을때 스크롤바 생기게
+  overflow-y: auto;
+  //스크롤바 스타일 커스텀
+  ::-webkit-scrollbar {
+    width: 7px; /* 스크롤바의 너비 */
+  }
+  ::-webkit-scrollbar-thumb {
+    height: 30%; /* 스크롤바의 길이 */
+    background: #4e4e4e; /* 스크롤바의 색상 */
+    border-radius: 10px;
+  }
 `;
 
 const BigCover = styled.div`
@@ -102,19 +114,21 @@ const BigOverview = styled.p`
 interface IModal {
   dataId: string;
   mediaType: string;
-  listType: string;
+  listType?: string;
 }
 
 function Modal({ dataId, mediaType, listType }: IModal) {
-  const { data, isLoading } = useQuery(
+  const { data } = useQuery(
     [listType + dataId, "datail" + dataId],
     () => getDetailData(mediaType, dataId) || null
   );
-  console.log(data, mediaType, dataId);
-  const { scrollY } = useScroll();
-  console.log(scrollY.get());
+  console.log(data, mediaType, dataId, listType);
+  //const { scrollY } = useScroll();
   const history = useHistory();
-  const onOverlayClick = () => history.push("/");
+  // const onMovieOverlayClick = () => history.push("/");
+  // const onTvOverlayClick = () => history.push("/tv");
+  const onOverlayClick = () => history.goBack();
+
   const getYear = (date: string) => {
     if (date) {
       return date.split("-")[0];
@@ -131,7 +145,9 @@ function Modal({ dataId, mediaType, listType }: IModal) {
         exit={{ opacity: 0 }}
       />
 
-      <BigMovie layoutId={dataId} style={{}}>
+      <BigMovie
+        layoutId={dataId + (listType === "airingToday" ? "airing" : "")}
+      >
         <BigCover
           style={{
             backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
