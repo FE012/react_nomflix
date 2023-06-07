@@ -14,7 +14,7 @@ import { useState } from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
-import ReactStars from "react-stars";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../Components/Modal";
 
 const Wrapper = styled.div`
@@ -73,6 +73,17 @@ const NextButton = styled.div`
   }
 `;
 
+const PrevButton = styled.div`
+  position: absolute;
+  left: 10px;
+  top: 100px;
+  border-radius: 7.5px;
+  &:hover {
+    cursor: pointer;
+    scale: 1.7;
+  }
+`;
+
 const Row = styled(motion.div)`
   display: grid;
   gap: 5px;
@@ -111,109 +122,26 @@ const Info = styled(motion.div)`
   }
 `;
 
-// Modal
-const Overlay = styled(motion.div)`
-  position: fixed;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  opacity: 0;
-`;
-
-// Modal
-const BigMovie = styled(motion.div)`
-  position: absolute;
-  width: 50vw;
-  height: 80vh;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  overflow: hidden;
-  border-radius: 15px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background-color: ${(props) => props.theme.black.lighter};
-  z-index: 99;
-`;
-
-const BigCover = styled.div`
-  width: 100%;
-  background-size: cover;
-  background-position: center center;
-  height: 350px;
-`;
-
-const BigPoster = styled.div`
-  width: 25%;
-  height: 200px;
-  position: absolute;
-  top: 200px;
-  left: 30px;
-  img {
-    width: 100%;
-  }
-`;
-
-const BigInfoTitle = styled.div`
-  color: ${(props) => props.theme.white.lighter};
-  position: absolute;
-  top: 255px;
-  left: 230px;
-`;
-
-const BigTitle = styled.h3`
-  font-size: 34px;
-  font-weight: 600;
-  margin-bottom: 5px;
-`;
-
-const BigTitleSmall = styled.h4`
-  font-weight: 400;
-`;
-
-const BigInfo = styled.div`
-  display: flex;
-  align-items: center;
-  position: absolute;
-  top: 360px;
-  left: 230px;
-  li {
-    list-style: none;
-    display: flex;
-    align-items: center;
-    .ratingValue {
-      margin-left: 4px;
-    }
-  }
-`;
-
-const BigInfoItem = styled.h4``;
-
-const BigAverage = styled.h4`
-  margin: 10px;
-`;
-
-const BigOverview = styled.p`
-  padding: 10px;
-  position: absolute;
-  top: 400px;
-  left: 220px;
-  color: ${(props) => props.theme.white.lighter};
-  width: 65%;
-  word-break: keep-all;
-`;
-
 const rowVariants = {
-  hidden: {
+  //next 버튼 눌렀을때 애니메이션
+  nextHidden: {
     x: window.innerWidth + 5,
   },
-  visible: {
+  nextVisible: {
     x: 0,
   },
-  exit: {
+  nextExit: {
     x: -window.innerWidth - 5,
+  },
+  //prev 버튼 눌렀을때 애니메이션
+  prevHidden: {
+    x: -window.innerWidth - 5,
+  },
+  prevVisible: {
+    x: 0,
+  },
+  prevExit: {
+    x: window.innerWidth + 5,
   },
 };
 
@@ -246,7 +174,7 @@ const infoVariants = {
 const offset = 6;
 
 function Home() {
-  const { scrollY } = useScroll();
+  //const { scrollY } = useScroll();
   const history = useHistory();
   // 라우터 매치 (Latest Movies, Top Rated Movies, Upcoming Movies)
   const bigMovieMatch = useRouteMatch<{ movieId: string }>("/movies/:movieId");
@@ -256,12 +184,13 @@ function Home() {
   const upBigMovieMatch = useRouteMatch<{ movieId: string }>(
     "/movies/upcoming/:movieId"
   );
-  console.log(bigMovieMatch);
-  // 리액트 쿼리로 data 불러오기 (Latest Movies, Top Rated Movies, Upcoming Movies)
+
+  // 리액트 쿼리로 data 불러옴 (Latest Movies, Top Rated Movies, Upcoming Movies)
   const { data: nowPlaying, isLoading } = useQuery<IGetMoviesResult>(
     ["movies", "nowPlaying"],
     getMovies
   );
+  console.log(nowPlaying);
   const { data: topRated } = useQuery<IGetTopMoviesResult>(
     ["movies", "topRated"],
     getTopMovies
@@ -275,9 +204,10 @@ function Home() {
   const [index, setIndex] = useState(0);
   const [topIndex, setTopIndex] = useState(0);
   const [upcomingIndex, setUpcomingIndex] = useState(0);
-  const [direction, setDirection] = useState(false);
-  const [topDirection, setTopDirection] = useState(false);
-  const [upcomingDirection, setUpcomingDirection] = useState(false);
+  // next 버튼 누르면 true, prev 버튼 누르면 false
+  const [direction, setDirection] = useState(true);
+  const [topDirection, setTopDirection] = useState(true);
+  const [upcomingDirection, setUpcomingDirection] = useState(true);
 
   //slider 애니메이션 효과에 텀을 두기 위한 state
   const [leaving, setLeaving] = useState(false);
@@ -285,41 +215,68 @@ function Home() {
     setLeaving((prev) => !prev);
   };
 
-  //slider Index function (Latest Movies, Top Rated Movies, Upcoming Movies)
+  //slider Index 증가 function (Latest Movies, Top Rated Movies, Upcoming Movies)
   const increaseIndex = () => {
     if (nowPlaying) {
       if (leaving) return;
       toggleLeaving();
-      setDirection(true);
       const totalMovies = nowPlaying.results.length - 1;
       const maxIndex = Math.floor(totalMovies / offset) - 1;
       setIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
   };
-  //Top Rated Movies Index function
   const topIncreaseIndex = () => {
     if (topRated) {
       if (leaving) return;
       toggleLeaving();
-      setTopDirection(true);
       const totalMovies = topRated.results.length - 1;
       const maxIndex = Math.floor(totalMovies / offset) - 1;
       setTopIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
   };
-  //Upcoming Movies Index function
   const upcomingIncreaseIndex = () => {
     if (upcoming) {
       if (leaving) return;
       toggleLeaving();
-      setUpcomingDirection(true);
       const totalMovies = upcoming.results.length - 1;
       const maxIndex = Math.floor(totalMovies / offset) - 1;
       setUpcomingIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
     }
   };
 
-  //Modal
+  //slider Index 감소 function (Latest Movies, Top Rated Movies, Upcoming Movies)
+  const decreaseIndex = () => {
+    if (nowPlaying) {
+      if (leaving) return;
+      toggleLeaving();
+      const totalMovies = nowPlaying.results.length - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1;
+      const minIndex = 0;
+      setIndex((prev) => (prev === minIndex ? maxIndex : prev - 1));
+    }
+  };
+  const topDecreaseIndex = () => {
+    if (topRated) {
+      if (leaving) return;
+      toggleLeaving();
+      const totalMovies = topRated.results.length - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1;
+      const minIndex = 0;
+      setTopIndex((prev) => (prev === minIndex ? maxIndex : prev - 1));
+    }
+  };
+  const upcomingDecreaseIndex = () => {
+    if (upcoming) {
+      if (leaving) return;
+      toggleLeaving();
+      setUpcomingDirection(false);
+      const totalMovies = upcoming.results.length - 1;
+      const maxIndex = Math.floor(totalMovies / offset) - 1;
+      const minIndex = 0;
+      setUpcomingIndex((prev) => (prev === minIndex ? maxIndex : prev - 1));
+    }
+  };
+
   // slider의 영화를 클릭하면 url 추가되게 (Latest Movies, Top Rated Movies, Upcoming Movies)
   const onBoxClicked = (movieId: number) => {
     history.push(`/movies/${movieId}`);
@@ -331,34 +288,22 @@ function Home() {
     history.push(`/movies/upcoming/${movieId}`);
   };
 
-  //Modal
-  const onOverlayClick = () => history.push("/");
-
-  // 클릭한 영화의 개별 데이터 (Latest Movies, Top Rated Movies, Upcoming Movies)
-  const clickedMovie =
-    bigMovieMatch?.params.movieId &&
-    nowPlaying?.results.find(
-      (movie) => movie.id + "" === bigMovieMatch.params.movieId
-    );
-  const topClickMovie =
-    topBigMovieMatch?.params.movieId &&
-    topRated?.results.find(
-      (movie) => movie.id + "" === topBigMovieMatch.params.movieId
-    );
-  const upClickMovie =
-    upBigMovieMatch?.params.movieId &&
-    upcoming?.results.find(
-      (movie) => movie.id + "" === upBigMovieMatch.params.movieId
-    );
-
-  // 영화의 개봉년도만 자르는 함수
-  const getYear = (date: string) => {
-    if (date) {
-      return date.split("-")[0];
-    } else {
-      return "";
-    }
-  };
+  // 클릭한 영화의 개별 데이터 (개별영화 불러오는 api 사용해서 필요없어짐)
+  // const clickedMovie =
+  //   bigMovieMatch?.params.movieId &&
+  //   nowPlaying?.results.find(
+  //     (movie) => movie.id + "" === bigMovieMatch.params.movieId
+  //   );
+  // const topClickMovie =
+  //   topBigMovieMatch?.params.movieId &&
+  //   topRated?.results.find(
+  //     (movie) => movie.id + "" === topBigMovieMatch.params.movieId
+  //   );
+  // const upClickMovie =
+  //   upBigMovieMatch?.params.movieId &&
+  //   upcoming?.results.find(
+  //     (movie) => movie.id + "" === upBigMovieMatch.params.movieId
+  //   );
 
   return (
     <Wrapper>
@@ -372,15 +317,15 @@ function Home() {
             <Title>{nowPlaying?.results[0].title}</Title>
             <Overview>{nowPlaying?.results[0].overview}</Overview>
           </Banner>
-          {/* 1. Latest Movies */}
+          {/* 1. Latest Movies slider */}
           <Slider style={{ top: -230 }}>
             <Category>Latest Movies</Category>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
                 variants={rowVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
+                initial={direction ? "nextHidden" : "prevHidden"}
+                animate={direction ? "nextVisible" : "prevVisible"}
+                exit={direction ? "nextExit" : "prevExit"}
                 transition={{ type: "tween", duration: 1 }}
                 key={index}
               >
@@ -405,9 +350,22 @@ function Home() {
                   ))}
               </Row>
             </AnimatePresence>
-            <NextButton onClick={increaseIndex}>
+            <NextButton
+              onClick={() => {
+                setDirection(true);
+                increaseIndex();
+              }}
+            >
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
             </NextButton>
+            <PrevButton
+              onClick={() => {
+                setDirection(false);
+                decreaseIndex();
+              }}
+            >
+              <FontAwesomeIcon icon={faChevronLeft} size="2xl" />
+            </PrevButton>
           </Slider>
           {/* 1. Latest movies 모달창 */}
           <AnimatePresence>
@@ -419,16 +377,15 @@ function Home() {
               />
             ) : null}
           </AnimatePresence>
-
           {/* 2. Top Rated Movies */}
           <Slider style={{ top: -30 }}>
             <Category>Top Rated Movies</Category>
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
                 variants={rowVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
+                initial={topDirection ? "nextHidden" : "prevHidden"}
+                animate={topDirection ? "nextVisible" : "prevVisible"}
+                exit={topDirection ? "nextExit" : "prevExit"}
                 transition={{ type: "tween", duration: 1 }}
                 key={topIndex}
               >
@@ -453,42 +410,31 @@ function Home() {
                   ))}
               </Row>
             </AnimatePresence>
-            <NextButton onClick={topIncreaseIndex}>
+            <NextButton
+              onClick={() => {
+                setTopDirection(true);
+                topIncreaseIndex();
+              }}
+            >
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
             </NextButton>
+            <PrevButton
+              onClick={() => {
+                setTopDirection(false);
+                topDecreaseIndex();
+              }}
+            >
+              <FontAwesomeIcon icon={faChevronLeft} size="2xl" />
+            </PrevButton>
           </Slider>
-          {/* 2. Top Rated Movies 모달 */}
+          {/* 2. Top Rated Movies 모달창 */}
           <AnimatePresence>
             {topBigMovieMatch ? (
-              <>
-                <Overlay
-                  onClick={onOverlayClick}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                />
-                <BigMovie
-                  layoutId={topBigMovieMatch.params.movieId}
-                  style={{ top: scrollY.get() + 100 }}
-                >
-                  {topClickMovie && (
-                    <>
-                      <BigCover
-                        style={{
-                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
-                            topClickMovie.backdrop_path,
-                            "w500"
-                          )})`,
-                        }}
-                      />
-                      <BigTitle>{topClickMovie.title}</BigTitle>
-                      <BigOverview>{topClickMovie.overview}</BigOverview>
-                      <BigAverage>
-                        vote average: {topClickMovie.vote_average}
-                      </BigAverage>
-                    </>
-                  )}
-                </BigMovie>
-              </>
+              <Modal
+                dataId={topBigMovieMatch.params.movieId}
+                mediaType={"movie"}
+                listType={LIST_TYPE[1]}
+              />
             ) : null}
           </AnimatePresence>
           {/* 3. Upcoming Movies */}
@@ -497,9 +443,9 @@ function Home() {
             <AnimatePresence initial={false} onExitComplete={toggleLeaving}>
               <Row
                 variants={rowVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
+                initial={upcomingDirection ? "nextHidden" : "prevHidden"}
+                animate={upcomingDirection ? "nextVisible" : "prevVisible"}
+                exit={upcomingDirection ? "nextExit" : "prevExit"}
                 transition={{ type: "tween", duration: 1 }}
                 key={upcomingIndex}
               >
@@ -511,7 +457,7 @@ function Home() {
                   )
                   .map((movie) => (
                     <Box
-                      layoutId={movie.id + "3"}
+                      layoutId={movie.id + ""}
                       key={movie.id}
                       variants={boxVariants}
                       initial="normal"
@@ -527,43 +473,31 @@ function Home() {
                   ))}
               </Row>
             </AnimatePresence>
-            <NextButton onClick={upcomingIncreaseIndex}>
+            <NextButton
+              onClick={() => {
+                setUpcomingDirection(true);
+                upcomingIncreaseIndex();
+              }}
+            >
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
             </NextButton>
+            <PrevButton
+              onClick={() => {
+                setUpcomingDirection(false);
+                upcomingDecreaseIndex();
+              }}
+            >
+              <FontAwesomeIcon icon={faChevronLeft} size="2xl" />
+            </PrevButton>
           </Slider>
           {/* 3. Upcoming Movies 모달창 */}
           <AnimatePresence>
             {upBigMovieMatch ? (
-              <>
-                <Overlay
-                  onClick={onOverlayClick}
-                  exit={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                />
-                <BigMovie
-                  layoutId={upBigMovieMatch.params.movieId + "3"}
-                  style={{ top: scrollY.get() + 100 }}
-                >
-                  {upClickMovie && (
-                    <>
-                      <BigCover
-                        style={{
-                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
-                            upClickMovie.backdrop_path,
-                            "w500"
-                          )})`,
-                        }}
-                      />
-                      <BigTitle>{upClickMovie.title}</BigTitle>
-                      <BigOverview>{upClickMovie.overview}</BigOverview>
-                      <BigAverage>
-                        {" "}
-                        vote average: {upClickMovie.vote_average}
-                      </BigAverage>
-                    </>
-                  )}
-                </BigMovie>
-              </>
+              <Modal
+                dataId={upBigMovieMatch.params.movieId}
+                mediaType={"movie"}
+                listType={LIST_TYPE[2]}
+              />
             ) : null}
           </AnimatePresence>
         </>
