@@ -7,7 +7,7 @@ https://fe012.github.io/react_nomflix
 ## 기술 스택
 React, TypeScript, React-query, React-hook-form, Styled-components, Framer Motion
 
-## 구현 화면 및 구현 기능 영상
+## 구현 화면 및 구현 기능 
 
 ### 홈페이지
 <img width="790" alt="놈플릭스 홈페이지" src="https://github.com/FE012/react_nomflix/assets/111476477/105e6e18-85d0-4f69-9638-45a42a024839">
