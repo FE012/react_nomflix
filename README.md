@@ -4,7 +4,7 @@
 ## 배포 링크
 https://fe012.github.io/react_nomflix
 
-## 사용 기술
+## 기술 스택
 React, TypeScript, React-query, React-hook-form, Styled-components, Framer Motion
 
 ## 구현 화면 및 구현 기능 영상
