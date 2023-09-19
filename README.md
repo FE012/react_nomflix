@@ -18,7 +18,7 @@ React, TypeScript, React-query, React-hook-form, Styled-components, Framer Motio
 ### 로고,탭,검색창 애니메이션
 ![놈플릭스 로고 애니메이션](https://github.com/FE012/react_nomflix/assets/111476477/17081c64-75f3-4106-8ab3-dcdcec344089)
 
-### 마우스 hover 애니메이션 및 영화 정보 모달창 
+### 마우스 hover 애니메이션 및 영화 상세 정보 모달창 
 ![마우스 hover하면 애니메이션 및 모달창 구현 영상](https://github.com/FE012/react_nomflix/assets/111476477/38fdaa41-8d5f-4676-9cde-d435ba807814)
 
 ### 영화 슬라이더 
