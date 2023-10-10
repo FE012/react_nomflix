@@ -60,11 +60,13 @@ const Category = styled.h3`
 
 const Slider = styled.div`
   position: relative;
+  margin-left: 40px;
+  margin-right: 40px;
 `;
 
 const NextButton = styled.div`
   position: absolute;
-  right: 10px;
+  right: -25px;
   top: 100px;
   border-radius: 7.5px;
   &:hover {
@@ -75,7 +77,7 @@ const NextButton = styled.div`
 
 const PrevButton = styled.div`
   position: absolute;
-  left: 10px;
+  left: -25px;
   top: 100px;
   border-radius: 7.5px;
   &:hover {
