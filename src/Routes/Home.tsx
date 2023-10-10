@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
-import { motion, AnimatePresence, useScroll } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   getMovies,
   getTopMovies,
@@ -190,7 +190,6 @@ function Home() {
     ["movies", "nowPlaying"],
     getMovies
   );
-  console.log(nowPlaying);
   const { data: topRated } = useQuery<IGetTopMoviesResult>(
     ["movies", "topRated"],
     getTopMovies
@@ -352,16 +351,22 @@ function Home() {
             </AnimatePresence>
             <NextButton
               onClick={() => {
+                // 애니메이션 방향을 변경하고, 새로운 애니메이션을 시작
                 setDirection(true);
-                increaseIndex();
+                setTimeout(() => {
+                  increaseIndex();
+                }, 0); // 0ms 딜레이로 설정
               }}
             >
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
             </NextButton>
             <PrevButton
               onClick={() => {
+                // 애니메이션 방향을 변경하고, 새로운 애니메이션을 시작
                 setDirection(false);
-                decreaseIndex();
+                setTimeout(() => {
+                  decreaseIndex();
+                }, 0); // 0ms 딜레이로 설정
               }}
             >
               <FontAwesomeIcon icon={faChevronLeft} size="2xl" />
@@ -412,16 +417,22 @@ function Home() {
             </AnimatePresence>
             <NextButton
               onClick={() => {
+                //애니메이션 방향을 변경하고, 새로운 애니메이션을 시작
                 setTopDirection(true);
-                topIncreaseIndex();
+                setTimeout(() => {
+                  topIncreaseIndex();
+                }, 0); // 0ms 딜레이로 설정
               }}
             >
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
             </NextButton>
             <PrevButton
               onClick={() => {
+                // // 애니메이션 방향을 변경하고, 새로운 애니메이션을 시작
                 setTopDirection(false);
-                topDecreaseIndex();
+                setTimeout(() => {
+                  topDecreaseIndex();
+                }, 0); // 0ms 딜레이로 설정
               }}
             >
               <FontAwesomeIcon icon={faChevronLeft} size="2xl" />
@@ -476,7 +487,9 @@ function Home() {
             <NextButton
               onClick={() => {
                 setUpcomingDirection(true);
-                upcomingIncreaseIndex();
+                setTimeout(() => {
+                  upcomingIncreaseIndex();
+                }, 0);
               }}
             >
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
@@ -484,7 +497,9 @@ function Home() {
             <PrevButton
               onClick={() => {
                 setUpcomingDirection(false);
-                upcomingDecreaseIndex();
+                setTimeout(() => {
+                  upcomingDecreaseIndex();
+                }, 0);
               }}
             >
               <FontAwesomeIcon icon={faChevronLeft} size="2xl" />
