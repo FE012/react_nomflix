@@ -52,11 +52,13 @@ const Category = styled.h3`
 
 const Slider = styled.div`
   position: relative;
+  margin-left: 40px;
+  margin-right: 40px;
 `;
 
 const NextButton = styled.div`
   position: absolute;
-  right: 10px;
+  right: -25px;
   top: 100px;
   border-radius: 7.5px;
   &:hover {
@@ -67,7 +69,7 @@ const NextButton = styled.div`
 
 const PrevButton = styled.div`
   position: absolute;
-  left: 10px;
+  left: -25px;
   top: 100px;
   border-radius: 7.5px;
   &:hover {
@@ -332,16 +334,22 @@ function Tv() {
             </AnimatePresence>
             <NextButton
               onClick={() => {
+                // 애니메이션 방향을 변경하고, 새로운 애니메이션을 시작
                 setDirection(true);
-                increaseIndex();
+                setTimeout(() => {
+                  increaseIndex();
+                }, 0); // 0ms 딜레이로 설정
               }}
             >
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
             </NextButton>
             <PrevButton
               onClick={() => {
+                // 애니메이션 방향을 변경하고, 새로운 애니메이션을 시작
                 setDirection(false);
-                decreaseIndex();
+                setTimeout(() => {
+                  decreaseIndex();
+                }, 0); // 0ms 딜레이로 설정
               }}
             >
               <FontAwesomeIcon icon={faChevronLeft} size="2xl" />
@@ -394,7 +402,9 @@ function Tv() {
             <NextButton
               onClick={() => {
                 setTopDirection(true);
-                topIncreaseIndex();
+                setTimeout(() => {
+                  topIncreaseIndex();
+                }, 0); // 0ms 딜레이로 설정
               }}
             >
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
@@ -402,7 +412,9 @@ function Tv() {
             <PrevButton
               onClick={() => {
                 setTopDirection(false);
-                topDecreaseIndex();
+                setTimeout(() => {
+                  topDecreaseIndex();
+                }, 0); // 0ms 딜레이로 설정
               }}
             >
               <FontAwesomeIcon icon={faChevronLeft} size="2xl" />
@@ -454,7 +466,9 @@ function Tv() {
             <NextButton
               onClick={() => {
                 setPopularDirection(true);
-                popularIncreaseIndex();
+                setTimeout(() => {
+                  popularIncreaseIndex();
+                });
               }}
             >
               <FontAwesomeIcon icon={faChevronRight} size="2xl" />
@@ -462,7 +476,9 @@ function Tv() {
             <PrevButton
               onClick={() => {
                 setPopularDirection(false);
-                popularDecreaseIndex();
+                setTimeout(() => {
+                  popularDecreaseIndex();
+                });
               }}
             >
               <FontAwesomeIcon icon={faChevronLeft} size="2xl" />
