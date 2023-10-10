@@ -1,16 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import { motion, useScroll } from "framer-motion";
+import { motion } from "framer-motion";
 import { useHistory } from "react-router-dom";
 import ReactStars from "react-stars";
 import styled from "styled-components";
 import { getDetailData } from "../Routes/api";
 import { makeImagePath } from "../Routes/util";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 
 const Overlay = styled(motion.div)`
   position: fixed;
   top: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
   opacity: 0;
 `;
@@ -49,6 +51,25 @@ const BigCover = styled.div`
   background-size: cover;
   background-position: center center;
   height: 350px;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 35px;
+  height: 35px;
+  border: none;
+  padding: 0px;
+  border-radius: 50%;
+  &:hover {
+    cursor: pointer;
+  }
+  .svg-inline--fa {
+    /* 아이콘에 대한 스타일 지정 */
+    width: 100%; // 아이콘을 수평으로 꽉 채우기
+    height: 100%; // 아이콘을 수직으로 꽉 채우기
+  }
 `;
 
 const BigPoster = styled.div`
@@ -122,7 +143,6 @@ function Modal({ dataId, mediaType, listType }: IModal) {
     [listType + dataId, "datail" + dataId],
     () => getDetailData(mediaType, dataId) || null
   );
-  console.log(data, mediaType, dataId, listType);
   //const { scrollY } = useScroll();
   const history = useHistory();
   // const onMovieOverlayClick = () => history.push("/");
@@ -144,7 +164,6 @@ function Modal({ dataId, mediaType, listType }: IModal) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       />
-
       <BigMovie
         layoutId={dataId + (listType === "airingToday" ? "airing" : "")}
       >
@@ -155,7 +174,11 @@ function Modal({ dataId, mediaType, listType }: IModal) {
               "w500"
             )})`,
           }}
-        />
+        >
+          <CloseButton onClick={onOverlayClick}>
+            <FontAwesomeIcon icon={faTimesCircle} />
+          </CloseButton>
+        </BigCover>
         <BigPoster>
           <img
             src={makeImagePath(data?.poster_path || "", "w500")}
