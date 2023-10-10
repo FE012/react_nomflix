@@ -1,46 +1,32 @@
-# Getting Started with Create React App
+## Nomflix 
+넷플릭스 클론코딩 프로젝트입니다.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 배포 링크
+https://fe012.github.io/react_nomflix
 
-## Available Scripts
+## 기술 스택
+React, TypeScript, React-query, React-hook-form, Styled-components, Framer Motion
 
-In the project directory, you can run:
+## 구현 화면 및 구현 기능 
 
-### `npm start`
+### 홈페이지
+<img width="790" alt="놈플릭스 홈페이지" src="https://github.com/FE012/react_nomflix/assets/111476477/105e6e18-85d0-4f69-9638-45a42a024839">
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Tv 페이지
+<img width="790" alt="놈플릭스 TV페이지" src="https://github.com/FE012/react_nomflix/assets/111476477/0924c0ab-cc57-4129-9cdc-ded997569d32">
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### 로고,탭,검색창 애니메이션
+![놈플릭스 로고 애니메이션](https://github.com/FE012/react_nomflix/assets/111476477/17081c64-75f3-4106-8ab3-dcdcec344089)
 
-### `npm test`
+### 마우스 hover 애니메이션 및 영화 상세 정보 모달창 
+![마우스 hover하면 애니메이션 및 모달창 구현 영상](https://github.com/FE012/react_nomflix/assets/111476477/38fdaa41-8d5f-4676-9cde-d435ba807814)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 영화 슬라이더 
+![영화 슬라이더 작동 영상](https://github.com/FE012/react_nomflix/assets/111476477/5ef878ae-56ae-4865-8c07-e880a98b42e8)
 
-### `npm run build`
+### 검색 기능 
+![검색 기능 구현 영상](https://github.com/FE012/react_nomflix/assets/111476477/2a3af269-fb58-4c27-8069-1f076e56fb4e)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 검색 결과 없을때
+<img width="790" alt="스크린샷 2023-09-19 오후 12 38 28" src="https://github.com/FE012/react_nomflix/assets/111476477/1ea44ee5-254a-4da3-909a-34ce1693c767">
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
